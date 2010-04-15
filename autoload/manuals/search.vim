@@ -238,7 +238,8 @@ function! manuals#search#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
    " we need autocmds to set ft&ro for files from opts.helpdirs
    if !has_key(s:helpAutocmdsSet, opts.helpdirs)
       for adir in split(opts.helpdirs, ',')
-         exec 'autocmd BufEnter ' . adir . '/*.txt setl ft=help readonly nomodifiable nobuflisted'
+         exec 'autocmd BufEnter ' . adir . 
+                  \ '/*.txt setl ft=help readonly nomodifiable nobuflisted isk=!-~,^*,^\|,^\"'
       endfor
       let s:helpAutocmdsSet[opts.helpdirs] = 1
    endif
@@ -512,13 +513,15 @@ endfunc
 
    if exists('g:pydiction_location') && filereadable(g:pydiction_location)
             \ || filereadable(g:vxlib_manuals_directory . "/pydiction/complete-dict")
+      " pydiction(850)
       call s:VxMan_AddGetter(['pydiction', 'k', 'manuals#search#Pydiction',
                \ 'Get a list of symbols using pydiction complete-dict.'])
       call s:VxMan_AddContexts(['python'], ['pydiction'])
    endif
 
-   if filereadable(g:vxlib_manuals_directory . '/cmake/cmakecmds.txt')
-      let s:hdir = g:vxlib_manuals_directory . '/cmake'
+   if filereadable(g:vxlib_manuals_directory . '/cmakeref/cmakecmds.txt')
+      " cmakeref(3045)
+      let s:hdir = g:vxlib_manuals_directory . '/cmakeref'
       call s:VxMan_AddGetter(['cmakeref>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for CMake.',
                \ { 'helpdirs': s:hdir, 'helpext': '.txt' }
@@ -527,9 +530,9 @@ endfunc
       unlet s:hdir
    endif
 
-   if filereadable(g:vxlib_manuals_directory . '/css/css21.txt')
-      " TODO: need to add isk=!-~,^*,^\|,^\" to modeline in css21.txt
-      let s:hdir = g:vxlib_manuals_directory . '/css'
+   if filereadable(g:vxlib_manuals_directory . '/cssref/css21.txt')
+      " css21(918)
+      let s:hdir = g:vxlib_manuals_directory . '/cssref'
       call s:VxMan_AddGetter(['cssref>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for CSS.',
                \ { 'helpdirs': s:hdir }
@@ -539,13 +542,26 @@ endfunc
    endif
 
    if filereadable(g:vxlib_manuals_directory . '/crefvim/crefvim.txt')
-      " TODO: need to add isk=!-~,^*,^\|,^\" to modeline in crefvim.txt
+      " crefvim(614)
+      " TODO: stlref(2353) can be put in the same dir
       let s:hdir = g:vxlib_manuals_directory . '/crefvim'
       call s:VxMan_AddGetter(['crefvim>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for C.',
                \ { 'helpdirs': s:hdir }
                \ ])
       call s:VxMan_AddContexts(['c', 'cpp'], ['crefvim'])
+      unlet s:hdir
+   endif
+
+   if filereadable(g:vxlib_manuals_directory . '/luarefvim/lua50refvim.txt')
+            \ || filereadable(g:vxlib_manuals_directory . '/luarefvim/lua51refvim.txt')
+      " luarefvim(1291)
+      let s:hdir = g:vxlib_manuals_directory . '/luarefvim'
+      call s:VxMan_AddGetter(['luarefvim>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
+               \ 'Get help for Lua.',
+               \ { 'helpdirs': s:hdir }
+               \ ])
+      call s:VxMan_AddContexts(['lua'], ['luarefvim'])
       unlet s:hdir
    endif
 " </VIMPLUGIN>
