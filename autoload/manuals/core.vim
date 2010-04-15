@@ -5,7 +5,7 @@
 " License: GPL (http://www.gnu.org/copyleft/gpl.html)
 " This program comes with ABSOLUTELY NO WARRANTY.
 
-if vxlib#plugin#StopLoading('#au#vxlib#manual')
+if vxlib#plugin#StopLoading('#au#manuals#core')
    finish
 endif
 
@@ -131,8 +131,8 @@ endfunc
 "  types may have special display (eg. VxView for all, except vim-help
 "  displayed in help buffer).
 let s:NoDisplay = { 'name': '', 'fn': '', 'datafmts': 'lbqo' }
-let s:disp_echo = { 'name': 'echo', 'fn': 'vxlib#manuals_d#Echo', 'datafmts': 'lb' }
-let s:disp_choice = { 'name': 'choice', 'fn': 'vxlib#manuals_d#InputList', 'datafmts': 'l' }
+let s:disp_echo = { 'name': 'echo', 'fn': 'manuals#display#Echo', 'datafmts': 'lb' }
+let s:disp_choice = { 'name': 'choice', 'fn': 'manuals#display#InputList', 'datafmts': 'l' }
 let s:ChoiceMenu = s:disp_choice
 let s:VxlibManual_Displayers = {
          \ 'text': {'echo': s:disp_echo},
@@ -317,7 +317,7 @@ endfunc
 "  Additional plugins register getters and displayers during startup (plugin
 "  reading stage).
 " @see also <url:vimhelp:map-operator#tn=F4>
-function! vxlib#manuals#ShowManual(count, visual, helpkind)
+function! manuals#core#ShowManual(count, visual, helpkind)
    call s:RegisterNewGetters()
    call s:RegisterNewContexts()
    call s:RegisterNewDisplayers()
@@ -469,14 +469,14 @@ finish
 "    - get the expected input-type for displayer
 "    - pass the input-type when calling the getter
 "
-" <VIMPLUGIN id="vxlib#showmanual" >
-   nmap <silent> <unique> <Plug>VxManText :call vxlib#manuals#ShowManual(v:count,'','t')<cr>
-   vmap <silent> <unique> <Plug>VxManText :<C-U>call vxlib#manuals#ShowManual(v:count,visualmode(),'t')<cr>
-   nmap <silent> <unique> <Plug>VxManMenu :call vxlib#manuals#ShowManual(v:count,'','m')<cr>
-   vmap <silent> <unique> <Plug>VxManMenu :<C-U>call vxlib#manuals#ShowManual(v:count,visualmode(),'m')<cr>
+" <VIMPLUGIN id="manuals#showmanual" >
+   nmap <silent> <unique> <Plug>VxManText :call manuals#core#ShowManual(v:count,'','t')<cr>
+   vmap <silent> <unique> <Plug>VxManText :<C-U>call manuals#core#ShowManual(v:count,visualmode(),'t')<cr>
+   nmap <silent> <unique> <Plug>VxManMenu :call manuals#core#ShowManual(v:count,'','m')<cr>
+   vmap <silent> <unique> <Plug>VxManMenu :<C-U>call manuals#core#ShowManual(v:count,visualmode(),'m')<cr>
 " </VIMPLUGIN>
 
-" <VIMPLUGIN id="vxlib#showmanual-maps" >
+" <VIMPLUGIN id="manuals#maps" >
    nmap K <Plug>VxManText
    vmap K <Plug>VxManText
    nmap <leader>kk <Plug>VxManMenu

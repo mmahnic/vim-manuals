@@ -5,7 +5,7 @@
 " License: GPL (http://www.gnu.org/copyleft/gpl.html)
 " This program comes with ABSOLUTELY NO WARRANTY.
 
-if vxlib#plugin#StopLoading('#au#vxlib#manuals_g')
+if vxlib#plugin#StopLoading('#au#manuals#search')
    finish
 endif
 
@@ -111,7 +111,7 @@ endfunc
 "       type: a set of flags (eg. 'tl'): @see <url:manuals.vim#flagdefs>
 "       filetype: suggested filetype when the result (full text) is displayed
 "          in a vim buffer
-function! vxlib#manuals_g#VimHelp(w1, w2, kind, getter, displayer, ...)
+function! manuals#search#VimHelp(w1, w2, kind, getter, displayer, ...)
    let result = ['']
    if a:kind == 'k'
       let tmpbuf='***ManualsHelpType***'
@@ -227,9 +227,9 @@ let s:helpAutocmdsSet = {}
 "       tags are used. The commands :tag, taglist() and (not yet) :vimgrep are
 "       used instead of :help, :h_Ctrl-D and :helpgrep. Only .txt extension is
 "       supported.
-function! vxlib#manuals_g#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
+function! manuals#search#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
    if !has_key(a:getter, 'params')
-      return vxlib#manuals_g#VimHelp(a:w1, a:w2, a:kind, a:getter, a:displayer)
+      return manuals#search#VimHelp(a:w1, a:w2, a:kind, a:getter, a:displayer)
    endif
 
    let curbuf = bufnr('%')
@@ -333,14 +333,14 @@ endfunc
 " Handler for files with filetype=help that chooses between normal vim help
 " and extern help handler. The decision depends on the contents of
 " buffer-local variables.
-function! vxlib#manuals_g#ChooseVimHelp(w1, w2, kind, getter, displayer, ...)
+function! manuals#search#ChooseVimHelp(w1, w2, kind, getter, displayer, ...)
    if exists('b:manual_type') && b:manual_type == 'extern-help'
-      let hfunc = 'vxlib#manuals_g#ExternVimHelp'
+      let hfunc = 'manuals#search#ExternVimHelp'
       if exists('b:manual_options')
          let a:getter.params = b:manual_options
       endif
    else
-      let hfunc = 'vxlib#manuals_g#VimHelp'
+      let hfunc = 'manuals#search#VimHelp'
    endif
    " echom "Chosen: " . hfunc
    let vparms = ''
@@ -355,7 +355,7 @@ endfunc
 call vxlib#plugin#CheckSetting('g:manuals_prg_man',
          \ '"!MANWIDTH=${width} man -P cat ${section} ${word} | col -b"')
 call vxlib#plugin#CheckSetting('g:manuals_max_man_width', '80')
-function! vxlib#manuals_g#Man(w1, count, kind, getter, displayer, ...)
+function! manuals#search#Man(w1, count, kind, getter, displayer, ...)
    let section = ''
    let cmd = g:manuals_prg_man
    if has_key(a:getter, 'params')
@@ -389,7 +389,7 @@ call vxlib#plugin#CheckSetting('g:manuals_prg_pydoc', '"pydoc"')
 " keywords and display a list of matches; then select an entry in the list to
 " display help for that item; requires an interactive viewer (list on first
 " level, text on second level).
-function! vxlib#manuals_g#Pydoc(w1, w2, kind, getter, displayer, ...)
+function! manuals#search#Pydoc(w1, w2, kind, getter, displayer, ...)
    let type = a:kind . 'l'
    if a:kind == 'g'
       let cmd = '!' . g:manuals_prg_pydoc . ' -k ' . a:w1
@@ -407,7 +407,7 @@ endfunc
 
 call vxlib#plugin#CheckSetting('g:manuals_prg_grep', '"grep"')
 " TODO (maybe) '"!grep -e \"${word}\" ${files}"'
-function! vxlib#manuals_g#Pydiction(w1, w2, kind, getterer, displayer, ...)
+function! manuals#search#Pydiction(w1, w2, kind, getterer, displayer, ...)
    let type = a:kind . 'l'
    if a:kind != 'k'
       return ['e', 'Invalid getter mode ' . a:kind . '.']
@@ -446,7 +446,7 @@ endfunc
 
 
 call vxlib#plugin#CheckSetting('g:manuals_prg_dict', '"dict"')
-function! vxlib#manuals_g#Dict(w1, w2, kind, getter, displayer, ...)
+function! manuals#search#Dict(w1, w2, kind, getter, displayer, ...)
    if a:kind != 't'
       return ['e', 'Invalid getter mode ' . a:kind . '.']
    endif
@@ -465,7 +465,7 @@ endfunc
 finish
 
 " a utility function that is copied to the beginning of a generated plugin script
-" <PLUGINFUNCTION id="vxlib#addgetter" name="VxMan_AddGetter">
+" <PLUGINFUNCTION id="manuals#addgetter" name="VxMan_AddGetter">
 if !exists("g:VxlibManuals_NewGetters")
    let g:VxlibManuals_NewGetters = []
 endif
@@ -474,7 +474,7 @@ function! s:VxMan_AddGetter(getterdef)
 endfunc
 " </PLUGINFUNCTION>
 
-" <PLUGINFUNCTION id="vxlib#addcontexts" name="VxMan_AddContexts">
+" <PLUGINFUNCTION id="manuals#addcontexts" name="VxMan_AddContexts">
 if !exists("g:VxlibManuals_NewContexts")
    let g:VxlibManuals_NewContexts = []
 endif
@@ -487,18 +487,18 @@ endfunc
 " to use the getter; if not, the getter is not added to the VxlibManual_Getters
 " eg. in case of dict it verifies if dict is installed.
 " (late inititalization/verification)
-" <VIMPLUGIN id="vxlib#showmanual_g" >
+" <VIMPLUGIN id="manuals#search" >
    if !exists("g:vxlib_manuals_directory")
       let rtp0 = split(&rtp, ',')[0]
       let g:vxlib_manuals_directory = expand(rtp0 . "/manuals")
    endif
 
-   call s:VxMan_AddGetter(['vimhelp', 'tkg', 'vxlib#manuals_g#VimHelp', 'Get Vim Help.'])
-   call s:VxMan_AddGetter(['extvimhelp>vimhelp', 'tkg', 'vxlib#manuals_g#ExternVimHelp', 'Get Help in Vim Format.'])
-   call s:VxMan_AddGetter(['_choosevimhelp>vimhelp', 'tkg', 'vxlib#manuals_g#ChooseVimHelp', 'Get Help in Vim Format.'])
-   call s:VxMan_AddGetter(['pydoc', 'tg', 'vxlib#manuals_g#Pydoc', 'Get help for current word using pydoc.'])
-   call s:VxMan_AddGetter(['man', 't', 'vxlib#manuals_g#Man', 'Get a man entry for current word.'])
-   call s:VxMan_AddGetter(['dict', 't', 'vxlib#manuals_g#Dict', 'Get a dictionary entry for current word.'])
+   call s:VxMan_AddGetter(['vimhelp', 'tkg', 'manuals#search#VimHelp', 'Get Vim Help.'])
+   call s:VxMan_AddGetter(['extvimhelp>vimhelp', 'tkg', 'manuals#search#ExternVimHelp', 'Get Help in Vim Format.'])
+   call s:VxMan_AddGetter(['_choosevimhelp>vimhelp', 'tkg', 'manuals#search#ChooseVimHelp', 'Get Help in Vim Format.'])
+   call s:VxMan_AddGetter(['pydoc', 'tg', 'manuals#search#Pydoc', 'Get help for current word using pydoc.'])
+   call s:VxMan_AddGetter(['man', 't', 'manuals#search#Man', 'Get a man entry for current word.'])
+   call s:VxMan_AddGetter(['dict', 't', 'manuals#search#Dict', 'Get a dictionary entry for current word.'])
 
    call s:VxMan_AddContexts(['vim'], ['vimhelp'])
    call s:VxMan_AddContexts(['help'], ['_choosevimhelp'])
@@ -508,14 +508,14 @@ endfunc
 
    if exists('g:pydiction_location') && filereadable(g:pydiction_location)
             \ || filereadable(g:vxlib_manuals_directory . "/pydiction/complete-dict")
-      call s:VxMan_AddGetter(['pydiction', 'k', 'vxlib#manuals_g#Pydiction',
+      call s:VxMan_AddGetter(['pydiction', 'k', 'manuals#search#Pydiction',
                \ 'Get a list of symbols using pydiction complete-dict.'])
       call s:VxMan_AddContexts(['python'], ['pydiction'])
    endif
 
    if filereadable(g:vxlib_manuals_directory . '/cmake/cmakecmds.txt')
       let s:hdir = g:vxlib_manuals_directory . '/cmake'
-      call s:VxMan_AddGetter(['cmakeref>extvimhelp', 'tkg', 'vxlib#manuals_g#ExternVimHelp',
+      call s:VxMan_AddGetter(['cmakeref>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for CMake.',
                \ { 'helpdirs': s:hdir, 'helpext': '.txt' }
                \ ]) " XXX { helpext: } unused, defaults to .txt

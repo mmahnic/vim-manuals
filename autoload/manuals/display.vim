@@ -5,7 +5,7 @@
 " License: GPL (http://www.gnu.org/copyleft/gpl.html)
 " This program comes with ABSOLUTELY NO WARRANTY.
 
-if vxlib#plugin#StopLoading('#au#vxlib#manuals_d')
+if vxlib#plugin#StopLoading('#au#manuals#display')
    finish
 endif
 
@@ -19,7 +19,7 @@ exec vxlib#plugin#MakeSID()
 " Displayers
 
 " Display text
-function! vxlib#manuals_d#Echo(rslt)
+function! manuals#display#Echo(rslt)
    for line in a:rslt[1]
       echo line . "\n"
    endfor
@@ -27,7 +27,7 @@ endfunc
 
 
 " Select a choice from list
-function! vxlib#manuals_d#InputList(rslt)
+function! manuals#display#InputList(rslt)
    let choices = []
    let i = 0
    for chc in a:rslt[1][0:&lines-3]
@@ -47,13 +47,13 @@ endfunc
 
 " Use an existing QuickFixList.
 " Doesn't return anything, the QuickFixList is a self-contained displayer.
-function! vxlib#manuals_d#QuickFixList(rslt)
+function! manuals#display#QuickFixList(rslt)
    copen
 endfunc
 
 
 " Display text
-function! vxlib#manuals_d#OpenPreview(rslt)
+function! manuals#display#OpenPreview(rslt)
    let lines = a:rslt[1]
    let pos = getpos(".")
    let win = winnr()
@@ -80,7 +80,7 @@ endfunc
 " TODO: title&cmd might be additional parameters
 " TODO: currently using VxPopup (list of items); need to implement 'textbox' in vimuiex
 " TODO: if type contains 'b', load items from a buffer
-function! vxlib#manuals_d#OpenVxText(rslt)
+function! manuals#display#OpenVxText(rslt)
    let popopt = {}
    call vimuiex#vxlist#VxPopup(a:rslt[1], 'Manual-Text', popopt)
 endfunc
@@ -96,7 +96,7 @@ endfunc
 "    keywords: should rerun the search on a single keyword to get text
 "    grep results: should jump to result
 " TODO: Get the title from the caller
-function! vxlib#manuals_d#OpenVxList(rslt)
+function! manuals#display#OpenVxList(rslt)
    let popopt = {}
    if a:rslt[0] =~ 'h'
       let popopt['init'] = s:SNR . 'VxcbInitOpenGrepResults'
@@ -111,7 +111,7 @@ endfunc
 
 " Select a choice from a menu
 " TODO: Get the title from the caller
-function! vxlib#manuals_d#OpenVxMenu(rslt)
+function! manuals#display#OpenVxMenu(rslt)
    let popopt = {}
    let slctd = vimuiex#vxlist#VxPopup(a:rslt[1], 'Menu', popopt)
    if len(slctd) < 1
@@ -179,56 +179,56 @@ finish
 " desired format. If a getter doesn't provide a format supported by the
 " displayer, ShowManual may convert the getters result into displayers format.
 
-" <PLUGINFUNCTION id="vxlib#var-mandisplaylist">
+" <PLUGINFUNCTION id="manuals#var-mandisplaylist">
 if !exists("g:VxlibManuals_NewDisplayers")
    let g:VxlibManuals_NewDisplayers = []
 endif
 " </PLUGINFUNCTION>
-" <PLUGINFUNCTION id="vxlib#addtextdisplay" name="VxMan_AddTextDisplay">
+" <PLUGINFUNCTION id="manuals#addtextdisplay" name="VxMan_AddTextDisplay">
 function! s:VxMan_AddTextDisplay(name, dispfn, datatypes)
    call add(g:VxlibManuals_NewDisplayers, ['t', a:name, a:dispfn, a:datatypes])
 endfunc
 " </PLUGINFUNCTION>
-" <PLUGINFUNCTION id="vxlib#addmenudisplay" name="VxMan_AddMenuDisplay">
+" <PLUGINFUNCTION id="manuals#addmenudisplay" name="VxMan_AddMenuDisplay">
 function! s:VxMan_AddMenuDisplay(name, dispfn)
    call add(g:VxlibManuals_NewDisplayers, ['m', a:name, a:dispfn, ''])
 endfunc
 " </PLUGINFUNCTION>
-" <PLUGINFUNCTION id="vxlib#addlistdisplay" name="VxMan_AddListDisplay">
+" <PLUGINFUNCTION id="manuals#addlistdisplay" name="VxMan_AddListDisplay">
 function! s:VxMan_AddListDisplay(name, dispfn, datatypes)
    call add(g:VxlibManuals_NewDisplayers, ['k', a:name, a:dispfn, a:datatypes])
 endfunc
 " </PLUGINFUNCTION>
-" <PLUGINFUNCTION id="vxlib#addgrepdisplay" name="VxMan_AddGrepDisplay">
+" <PLUGINFUNCTION id="manuals#addgrepdisplay" name="VxMan_AddGrepDisplay">
 function! s:VxMan_AddGrepDisplay(name, dispfn, datatypes)
    call add(g:VxlibManuals_NewDisplayers, ['g', a:name, a:dispfn, a:datatypes])
 endfunc
 " </PLUGINFUNCTION>
 
-" <VIMPLUGIN id="vxlib#showmanual_d" >
-   call s:VxMan_AddMenuDisplay('choice', 'vxlib#manuals_d#InputList')
+" <VIMPLUGIN id="manuals#display" >
+   call s:VxMan_AddMenuDisplay('choice', 'manuals#display#InputList')
 
-   call s:VxMan_AddTextDisplay('echo', 'vxlib#manuals_d#Echo', 'lb')
-   call s:VxMan_AddTextDisplay('preview', 'vxlib#manuals_d#OpenPreview', 'bl')
+   call s:VxMan_AddTextDisplay('echo', 'manuals#display#Echo', 'lb')
+   call s:VxMan_AddTextDisplay('preview', 'manuals#display#OpenPreview', 'bl')
 
-   call s:VxMan_AddListDisplay('choice', 'vxlib#manuals_d#InputList', 'l')
-   call s:VxMan_AddGrepDisplay('choice', 'vxlib#manuals_d#InputList', 'l')
-   call s:VxMan_AddGrepDisplay('qfixlist', 'vxlib#manuals_d#QuickFixList', 'q')
+   call s:VxMan_AddListDisplay('choice', 'manuals#display#InputList', 'l')
+   call s:VxMan_AddGrepDisplay('choice', 'manuals#display#InputList', 'l')
+   call s:VxMan_AddGrepDisplay('qfixlist', 'manuals#display#QuickFixList', 'q')
 
-   "call s:AddGrepDisplay('qfixlist', 'vxlib#manuals_d#QFixList', 'qo')
+   "call s:AddGrepDisplay('qfixlist', 'manuals#display#QFixList', 'qo')
 
    if s:PluginExists('vimuiex#vxlist', 'autoload/vimuiex/vxlist.vim')
-      call s:VxMan_AddMenuDisplay('vimuiex', 'vxlib#manuals_d#OpenVxMenu')
+      call s:VxMan_AddMenuDisplay('vimuiex', 'manuals#display#OpenVxMenu')
 
-      call s:VxMan_AddTextDisplay('vimuiex', 'vxlib#manuals_d#OpenVxText', 'lb')
+      call s:VxMan_AddTextDisplay('vimuiex', 'manuals#display#OpenVxText', 'lb')
 
-      call s:VxMan_AddListDisplay('vimuiex', 'vxlib#manuals_d#OpenVxList', 'l')
-      call s:VxMan_AddGrepDisplay('vimuiex', 'vxlib#manuals_d#OpenVxList', 'l')
+      call s:VxMan_AddListDisplay('vimuiex', 'manuals#display#OpenVxList', 'l')
+      call s:VxMan_AddGrepDisplay('vimuiex', 'manuals#display#OpenVxList', 'l')
    endif
 
    if s:PluginExists('tlib', 'plugin/02tlib.vim')
-      call s:VxMan_AddListDisplay('tlib', 'vxlib#manuals_d#OpenTlibList', 'bl')
-      call s:VxMan_AddGrepDisplay('tlib', 'vxlib#manuals_d#OpenTlibList', 'bl')
+      call s:VxMan_AddListDisplay('tlib', 'manuals#display#OpenTlibList', 'bl')
+      call s:VxMan_AddGrepDisplay('tlib', 'manuals#display#OpenTlibList', 'bl')
    endif
 " </VIMPLUGIN>
 
