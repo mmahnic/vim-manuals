@@ -246,11 +246,14 @@ function! manuals#search#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
    let result = ['']
    if a:kind == 't'
       try
+         let wincreated = 0
          let tagfiles = s:FindTagFiles(opts.helpdirs, 'tags')
          if tagfiles == &l:tags
             let tmpbuf = -1
          else
+            let nw = winnr('$')
             let tmpbuf = s:MakeTmpHelpBuf(tagfiles, 1)
+            let wincreated = (nw != winnr('$'))
          endif
          try
             " if :tag doesn't find a tag, an exception is thrown
@@ -271,9 +274,10 @@ function! manuals#search#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
          catch /.*/
          endtry
       finally
-         if bufnr('%') == tmpbuf
+         if bufnr('%') == tmpbuf && !wincreated
             " a tag was not found, tmpbuf is still active
             "    => select curbuf to keep the window after bwipeout
+            "       but only if it wasn't created by MakeTmpHelpBuf
             silent! exec 'b ' . curbuf
          endif
          if tmpbuf >= 0
@@ -520,6 +524,28 @@ endfunc
                \ { 'helpdirs': s:hdir, 'helpext': '.txt' }
                \ ]) " XXX { helpext: } unused, defaults to .txt
       call s:VxMan_AddContexts(['cmake'], ['cmakeref'])
+      unlet s:hdir
+   endif
+
+   if filereadable(g:vxlib_manuals_directory . '/css/css21.txt')
+      " TODO: need to add isk=!-~,^*,^\|,^\" to modeline in css21.txt
+      let s:hdir = g:vxlib_manuals_directory . '/css'
+      call s:VxMan_AddGetter(['cssref>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
+               \ 'Get help for CSS.',
+               \ { 'helpdirs': s:hdir }
+               \ ])
+      call s:VxMan_AddContexts(['css', 'html*/css*', 'xhtml/*.css'], ['cssref'])
+      unlet s:hdir
+   endif
+
+   if filereadable(g:vxlib_manuals_directory . '/crefvim/crefvim.txt')
+      " TODO: need to add isk=!-~,^*,^\|,^\" to modeline in crefvim.txt
+      let s:hdir = g:vxlib_manuals_directory . '/crefvim'
+      call s:VxMan_AddGetter(['crefvim>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
+               \ 'Get help for C.',
+               \ { 'helpdirs': s:hdir }
+               \ ])
+      call s:VxMan_AddContexts(['c', 'cpp'], ['crefvim'])
       unlet s:hdir
    endif
 " </VIMPLUGIN>

@@ -472,6 +472,10 @@ finish
 " <VIMPLUGIN id="manuals#showmanual" >
    nmap <silent> <unique> <Plug>VxManText :call manuals#core#ShowManual(v:count,'','t')<cr>
    vmap <silent> <unique> <Plug>VxManText :<C-U>call manuals#core#ShowManual(v:count,visualmode(),'t')<cr>
+   nmap <silent> <unique> <Plug>VxManKeyword :call manuals#core#ShowManual(v:count,'','k')<cr>
+   vmap <silent> <unique> <Plug>VxManKeyword :<C-U>call manuals#core#ShowManual(v:count,visualmode(),'k')<cr>
+   nmap <silent> <unique> <Plug>VxManGrep :call manuals#core#ShowManual(v:count,'','g')<cr>
+   vmap <silent> <unique> <Plug>VxManGrep :<C-U>call manuals#core#ShowManual(v:count,visualmode(),'g')<cr>
    nmap <silent> <unique> <Plug>VxManMenu :call manuals#core#ShowManual(v:count,'','m')<cr>
    vmap <silent> <unique> <Plug>VxManMenu :<C-U>call manuals#core#ShowManual(v:count,visualmode(),'m')<cr>
 " </VIMPLUGIN>
@@ -479,7 +483,11 @@ finish
 " <VIMPLUGIN id="manuals#maps" >
    nmap K <Plug>VxManText
    vmap K <Plug>VxManText
-   nmap <leader>kk <Plug>VxManMenu
-   vmap <leader>kk <Plug>VxManMenu
+   nmap <leader>kk <Plug>VxManKeyword
+   vmap <leader>kk <Plug>VxManKeyword
+   nmap <leader>kg <Plug>VxManGrep
+   vmap <leader>kg <Plug>VxManGrep
+   nmap <leader>km <Plug>VxManMenu
+   vmap <leader>km <Plug>VxManMenu
 " </VIMPLUGIN>
 
