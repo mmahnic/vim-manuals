@@ -125,6 +125,9 @@ function! manuals#display#OpenManualsBuffer(rslt)
    norm! ggVGd
    call setline(1, lines)
    norm! gg
+   if a:rslt.ftype != ''
+      exec 'setl filetype=' . a:rslt.ftype
+   endif
    setl readonly nomodifiable
 endfunc
 

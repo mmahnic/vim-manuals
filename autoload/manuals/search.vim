@@ -351,8 +351,8 @@ function! manuals#search#Man(w1, count, kind, getter, displayer, ...)
    let cmd = g:manuals_prg_man
    if has_key(a:getter, 'params')
       let opts = a:getter.params
-      if opts.has_key('cmd') | let cmd = opts.cmd | endif
-      if opts.has_key('section') | let section = opts.section | endif
+      if has_key(opts, 'cmd') | let cmd = opts.cmd | endif
+      if has_key(opts, 'section') | let section = opts.section | endif
    elseif a:count > 0 
       let section = '' . a:count
    endif
@@ -399,7 +399,6 @@ endfunc
 call vxlib#plugin#CheckSetting('g:manuals_prg_grep', '"grep"')
 " TODO (maybe) '"!grep -e \"${word}\" ${files}"'
 function! manuals#search#Pydiction(w1, w2, kind, getterer, displayer, ...)
-   let type = a:kind . 'l'
    if a:kind != 'k'
       return manuals#search#Error('e', 'Help kind "' . a:kind . '" not supported by Pydiction.')
    endif
@@ -446,6 +445,21 @@ function! manuals#search#Dict(w1, w2, kind, getter, displayer, ...)
    return manuals#search#Result('t', 'l', rslt)
 endfunc
 
+call vxlib#plugin#CheckSetting('g:manuals_prg_perldoc', '"perldoc"')
+function! manuals#search#Perldoc(w1, w2, kind, getter, displayer, ...)
+   if a:kind != 't'
+      return manuals#search#Error('e', 'Help kind "' . a:kind . '" not supported by Perldoc.')
+   endif
+   let pdoption = ''
+   if has_key(a:getter, 'params')
+      let opts = a:getter.params
+      if has_key(opts, 'options') | let pdoption = opts.options | endif
+   endif
+   let cmd = '!' . g:manuals_prg_perldoc . ' -T -t ' . pdoption . ' ' . a:w1
+   let rslt = s:SmartCapture(cmd)
+   return manuals#search#Result('t', 'l', rslt, 'man')
+endfunc
+
 " =========================================================================== 
 " Global Initialization - Processed by Plugin Code Generator
 " =========================================================================== 
@@ -487,9 +501,20 @@ endfunc
    call s:VxMan_AddGetter(['man', 't', 'manuals#search#Man', 'Get a man entry for current word.'])
    call s:VxMan_AddGetter(['dict', 't', 'manuals#search#Dict', 'Get a dictionary entry for current word.'])
 
+   call s:VxMan_AddGetter(['perldoc', 't', 'manuals#search#Perldoc', 'Get help for current word using perldoc.'])
+   call s:VxMan_AddGetter(['perldoc-m>perldoc', 't', 'manuals#search#Perldoc',
+            \ 'Get help for module using perldoc.',
+            \ { 'options': '-m'} ])
+   call s:VxMan_AddGetter(['perldoc-f>perldoc', 't', 'manuals#search#Perldoc',
+            \ 'Get help for function using perldoc.',
+            \ { 'options': '-f'} ])
+
    call s:VxMan_AddContexts(['vim'], ['vimhelp'])
    call s:VxMan_AddContexts(['help'], ['_choosevimhelp'])
    call s:VxMan_AddContexts(['python'], ['pydoc'])
+   call s:VxMan_AddContexts(['perl'], ['perldoc'])
+   call s:VxMan_AddContexts(['perl', 'perl/perlStatement*'], ['perldoc-f'])
+   call s:VxMan_AddContexts(['perl', 'perl/perlPackageRef'], ['perldoc-m'])
    call s:VxMan_AddContexts(['sh'], ['man'])
    call s:VxMan_AddContexts(['*/*comment', '*/*string', 'text', 'tex', '*'], ['dict'])
 
