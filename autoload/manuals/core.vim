@@ -16,7 +16,7 @@ endif
 "    - g grep results (format: filename, line, text)
 "    - h grep results (filenames as titles, format= n: lineno (type) text)
 "    - e error (data = description)
-" resulttypes:
+" resulttypes (formats):
 "    - l returned as a list (data = array of strings)
 "    - b returned as a buffer (data = buffer name)
 "    - q returned as qfixlist (data = ?)
@@ -360,7 +360,7 @@ function! manuals#core#ShowManual(count, visual, helpkind)
       let gttr = getters[0]
    else
       let mdisp = s:GetMenuDisplayer()
-      let rslt = ['', []]
+      let rslt = manuals#search#Empty()
       let gttr_kind = []
       for gttr in getters
          for i in range(len(helpkind)) " TODO: use only kinds that are also in helpkind, in helpkind order
@@ -369,7 +369,7 @@ function! manuals#core#ShowManual(count, visual, helpkind)
                   continue
                endif
                let descr = s:helpkinds[helpkind[i]]
-               call add(rslt[1], gttr.doc . ' (' . descr . ')')
+               call add(rslt.content, gttr.id . ' (' . descr . ")\t" . gttr.doc)
                call add(gttr_kind, [gttr, helpkind[i]])
             catch /.*/
             endtry
@@ -401,20 +401,20 @@ function! manuals#core#ShowManual(count, visual, helpkind)
    " total number of items in stored lists). Also remember results from level
    " 2 (retrieve text) below.
 
-   if rslt[0] =~ 'e'
-      echom "Error: " . rslt[1]
-   elseif rslt[0] =~ 'w'
-      echom rslt[1]
-   elseif disply.fn != "" && rslt[0] != ''
+   if rslt.kind == 'e'
+      echom "Error: " . rslt.content[0]
+   elseif rslt.kind == 'w'
+      echom rslt.content[0]
+   elseif disply.fn != "" && rslt.kind != ''
       " TODO: convert the result (rslt[1]) if necessary
       exec 'let choice=' . disply.fn . '(rslt)'
-      if ! (rslt[0] =~ 't') && choice >= 0
-         let keyword = rslt[1][choice] " TODO: rslt[1] may not be a list: check type in rslt[0]!
+      if rslt.kind != 't' && choice >= 0
+         let keyword = rslt.content[choice]
          let keyword = split(keyword, "\t")[0]
-         if rslt[0] =~ 'h' || rslt[0] =~ 'g'
+         if rslt.format == 'h' || rslt.format == 'g'
             " A grep result was selected: jump to location
             echo "TODO: jump to grep location"
-         elseif rslt[0] =~ 'k' && ! (helpkind =~ 't')
+         elseif rslt.kind == 'k' && ! (helpkind =~ 't')
             " A keyword was selected: perform another text search
             let textgetters = s:FindGetters(ctx, 't')
             if len(textgetters) < 1
@@ -434,7 +434,7 @@ function! manuals#core#ShowManual(count, visual, helpkind)
                " get text for keyword
                let tdisply = s:FindMatchingDisplayer('t', tgttr)
                exec 'let rslt=' . tgttr.fn . '(keyword, 0, "t", tgttr, tdisply)'
-               if tdisply.fn != "" && rslt[0] != ''
+               if tdisply.fn != "" && rslt.kind != ''
                   exec 'call ' . tdisply.fn . '(rslt)'
                endif
             endif

@@ -20,7 +20,7 @@ exec vxlib#plugin#MakeSID()
 
 " Display text
 function! manuals#display#Echo(rslt)
-   for line in a:rslt[1]
+   for line in a:rslt.content
       echo line . "\n"
    endfor
    return -1
@@ -31,8 +31,8 @@ endfunc
 function! manuals#display#InputList(rslt)
    let choices = []
    let i = 0
-   for chc in a:rslt[1][0:&lines-3]
-      call add(choices, (i + 1) . '. ' . a:rslt[1][i])
+   for chc in a:rslt.content[0:&lines-3]
+      call add(choices, (i + 1) . '. ' . a:rslt.content[i])
       let i += 1
    endfor
 
@@ -115,7 +115,7 @@ endfunc
 
 " Display text - in a temporary buffer
 function! manuals#display#OpenManualsBuffer(rslt)
-   let lines = a:rslt[1]
+   let lines = a:rslt.content
    let pos = getpos(".")
    let win = winnr()
    "let nw = winnr('$')
@@ -135,7 +135,7 @@ endfunc
 " TODO: if type contains 'b', load items from a buffer
 function! manuals#display#OpenVxText(rslt)
    let popopt = {}
-   call vimuiex#vxlist#VxPopup(a:rslt[1], 'Manual-Text', popopt)
+   call vimuiex#vxlist#VxPopup(a:rslt.content, 'Manual-Text', popopt)
    return -1
 endfunc
 
@@ -152,11 +152,11 @@ endfunc
 " TODO: Get the title from the caller
 function! manuals#display#OpenVxList(rslt)
    let popopt = {}
-   if a:rslt[0] =~ 'h'
+   if a:rslt.kind == 'h'
       let popopt['init'] = s:SNR . 'VxcbInitOpenGrepResults'
       let popopt['current'] = 1
    endif
-   let slctd = vimuiex#vxlist#VxPopup(a:rslt[1], 'Manual-List', popopt)
+   let slctd = vimuiex#vxlist#VxPopup(a:rslt.content, 'Manual-List', popopt)
    if len(slctd) < 1
       return -1
    endif
@@ -167,7 +167,8 @@ endfunc
 " TODO: Get the title from the caller
 function! manuals#display#OpenVxMenu(rslt)
    let popopt = {}
-   let slctd = vimuiex#vxlist#VxPopup(a:rslt[1], 'Menu', popopt)
+   let popopt.columns = 1
+   let slctd = vimuiex#vxlist#VxPopup(a:rslt.content, 'Menu', popopt)
    if len(slctd) < 1
       return -1
    endif

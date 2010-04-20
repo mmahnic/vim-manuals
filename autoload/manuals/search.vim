@@ -9,6 +9,36 @@ if vxlib#plugin#StopLoading('#au#manuals#search')
    finish
 endif
 
+function! manuals#search#Empty()
+   " rxkwd: a regular expression that matches a keyword in the displayed text
+   return {  'kind': '', 'format': '',  'content': [], 'ftype': '', 'rxkwd': '' }
+endfunc
+
+" Create a dictionary for the results of a help provider
+" @params: kind, format, content, filetype
+function! manuals#search#Result(kind, format, ...)
+   let rslt = manuals#search#Empty()
+   let rslt.kind = a:kind
+   let rslt.format = a:format
+   if a:0 > 0
+      if type(a:1) == type([]) | let rslt.content = a:1
+      elseif type(a:1) == type("") | let rslt.content = [a:1]
+      endif
+   endif
+   if a:0 > 1
+      let rslt.ftype = a:2
+   endif
+   return rslt
+endfunc
+
+function! manuals#search#Error(kind, text)
+   let rslt = manuals#search#Empty()
+   let rslt.kind = a:kind
+   " let rslt.content = split(a:text, '\n')
+   let rslt.content = [a:text]
+   return rslt
+endfunc
+
 " Getters
 
 function! s:SmartCapture(cmd) " TODO: vxlib#cmd#SmartCapture()
@@ -111,8 +141,10 @@ endfunc
 "       filetype: suggested filetype when the result (full text) is displayed
 "          in a vim buffer
 function! manuals#search#VimHelp(w1, w2, kind, getter, displayer, ...)
-   let result = ['']
-   if a:kind == 'k'
+   let result = manuals#search#Empty()
+   if a:kind == 't'
+      silent! exec "help " . a:w1
+   elseif a:kind == 'k'
       let tmpbuf=g:manuals_help_buffer
       try
          " use a temp help buffer to build the taglist
@@ -133,7 +165,7 @@ function! manuals#search#VimHelp(w1, w2, kind, getter, displayer, ...)
          call sort(htlist, "s:VimHelpCompare")
          " call map(htlist, 'v:val . " " . s:VimHelpScore(v:val, s:helpword)') " debug
          " echom a:w1 . " " . len(htags)
-         let result=['kl', htlist, '']
+         let result=manuals#search#Result('k', 'l', htlist)
       finally
          setl nomodified
          silent! exec 'bwipeout ' . tmpbuf
@@ -147,7 +179,7 @@ function! manuals#search#VimHelp(w1, w2, kind, getter, displayer, ...)
          let items = getqflist()
 
          if len(items) < 1
-            let result = ['']
+            let result = manuals#search#Empty()
          else
             let [ids, gritems] = vxlib#cmd#TransformQFixItems(items)
             unlet items
@@ -156,16 +188,13 @@ function! manuals#search#VimHelp(w1, w2, kind, getter, displayer, ...)
             " displayer IS quickfix, keep the list and the unlisted buffers
             call s:KeepBuffers(knownbufs)
             call setqflist([])
-            let result = ['hl', gritems, '']
+            let result=manuals#search#Result('h', 'l', gritems)
          endif
       finally
          if curbuf != bufnr("%") && &filetype=='help'
             bwipeout 
          endif
       endtry
-   else
-      silent! exec "help " . a:w1
-      let result = ['']
    endif
    return result
 endfunc
@@ -201,7 +230,7 @@ function! manuals#search#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
       let s:helpAutocmdsSet[opts.helpdirs] = 1
    endif
 
-   let result = ['']
+   let result = manuals#search#Empty()
    if a:kind == 't'
       try
          let wincreated = 0
@@ -258,7 +287,7 @@ function! manuals#search#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
          endfor
          let s:helpword = a:w1
          call sort(htlist, "s:VimHelpCompare")
-         let result=['kl', htlist, '']
+         let result=manuals#search#Result('k', 'l', htlist]
       finally
          if tmpbuf >= 0
             silent! exec 'bwipeout! ' . tmpbuf
@@ -278,12 +307,12 @@ function! manuals#search#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
          " TODO: maybe qfixlist should be converted to list in ShowManual and the
          " buffers should not be removed
          if len(items) < 1
-            let result = ['']
+            let result = manuals#search#Empty()
          else
             let [ids, gritems] = vxlib#cmd#TransformQFixItems(items)
             call s:KeepBuffers(knownbufs)
             call setqflist([])
-            let result = ['hl', gritems, '']
+            let result=manuals#search#Result('h', 'l', gritems]
          endif
       endif
    endif
@@ -340,9 +369,9 @@ function! manuals#search#Man(w1, count, kind, getter, displayer, ...)
    let cmd = substitute(cmd, '\${word}', a:w1, '')
    let page = s:SmartCapture(cmd)
    if len(page) < 2 || page[1] =~ "No manual entry"
-      return ['w', "No manual entry for " . a:w1]
+      return manuals#search#Error('w', "No manual entry for " . a:w1)
    endif
-   return ['tl', page, '']
+   return manuals#search#Result('t', 'l', page, 'man')
 endfunc
 
 
@@ -352,18 +381,18 @@ call vxlib#plugin#CheckSetting('g:manuals_prg_pydoc', '"pydoc"')
 " display help for that item; requires an interactive viewer (list on first
 " level, text on second level).
 function! manuals#search#Pydoc(w1, w2, kind, getter, displayer, ...)
-   let type = a:kind . 'l'
    if a:kind == 'g'
       let cmd = '!' . g:manuals_prg_pydoc . ' -k ' . a:w1
-   else
+   elseif a:kind == 't'
       let cmd = '!' . g:manuals_prg_pydoc . ' ' . a:w1
+   else
+      return manuals#search#Error('e', 'Help kind "' . a:kind . '" not supported by Pydoc.')
    endif
    let rslt = s:SmartCapture(cmd)
    if len(rslt) < 1 || match(rslt[0], 'no Python documentation found for') == 0
-      let rslt = []
-      let type = ''
+      return manuals#search#Empty()
    endif
-   return [type, rslt, '']
+   return manuals#search#Result(a:kind, 'l', rslt)
 endfunc
 
 
@@ -372,7 +401,7 @@ call vxlib#plugin#CheckSetting('g:manuals_prg_grep', '"grep"')
 function! manuals#search#Pydiction(w1, w2, kind, getterer, displayer, ...)
    let type = a:kind . 'l'
    if a:kind != 'k'
-      return ['e', 'Invalid getter mode ' . a:kind . '.']
+      return manuals#search#Error('e', 'Help kind "' . a:kind . '" not supported by Pydiction.')
    endif
    if exists('g:pydiction_location') && filereadable(g:pydiction_location)
       let dictfile = g:pydiction_location
@@ -380,14 +409,14 @@ function! manuals#search#Pydiction(w1, w2, kind, getterer, displayer, ...)
       let dictfile = g:vxlib_manuals_directory . "/pydiction/complete-dict"
    endif
    if ! filereadable(dictfile)
-      return ['e', 'g:pydiction_location not set or file not readable.']
+      return manuals#search#Error('e', 'g:pydiction_location not set or file not readable.')
    endif
 
    " TODO: special behaviour if vimgrep is used
    let cmd = '!' . g:manuals_prg_grep .' -e "' . escape(a:w1, ' \"()') . '" ' . escape(dictfile, ' \')
    let capt = s:SmartCapture(cmd)
    if len(capt) > 0 && len(capt) < 4 && capt[2] =~ '\Cshell\s*returned' 
-      return ['tl', ['Pydiction', 'No matches found for "' . a:w1 . '"'], '']
+      return manuals#search#Error('w', "Pydiction\nNo matches found for '" . a:w1 . "'")
    elseif len(capt) > 0
       let rslt = []
       for word in capt
@@ -401,24 +430,20 @@ function! manuals#search#Pydiction(w1, w2, kind, getterer, displayer, ...)
          call add(rslt, kword)
       endfor
       call sort(rslt)
-      return [type, rslt, '']
+      return manuals#search#Result('k', 'l', rslt)
    endif
-   return ['']
+   return manuals#search#Empty()
 endfunc
 
 
 call vxlib#plugin#CheckSetting('g:manuals_prg_dict', '"dict"')
 function! manuals#search#Dict(w1, w2, kind, getter, displayer, ...)
    if a:kind != 't'
-      return ['e', 'Invalid getter mode ' . a:kind . '.']
+      return manuals#search#Error('e', 'Help kind "' . a:kind . '" not supported by Dict.')
    endif
-   let type = 'tl'
    let cmd = '!' . g:manuals_prg_dict . ' ' . a:w1
    let rslt = s:SmartCapture(cmd)
-   "if len(rslt) < 2 || match(rslt[1], 'No definitions found') == 0
-   "   return ['w', 'No definitions found']
-   "endif
-   return [type, rslt, '']
+   return manuals#search#Result('t', 'l', rslt)
 endfunc
 
 " =========================================================================== 
