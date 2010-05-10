@@ -142,6 +142,7 @@ endfunc
 "          in a vim buffer
 function! manuals#search#VimHelp(w1, w2, kind, getter, displayer, ...)
    let result = manuals#search#Empty()
+   let curbuf = bufnr('%')
    if a:kind == 't'
       silent! exec "help " . a:w1
    elseif a:kind == 'k'
@@ -150,6 +151,7 @@ function! manuals#search#VimHelp(w1, w2, kind, getter, displayer, ...)
          " use a temp help buffer to build the taglist
          " (because taglist() uses a buffer-local setting)
          silent! exec 'edit ' . tmpbuf
+         setl nomodified
          setl filetype=help
          let tagfiles=globpath(&rtp, "doc/tags")
          let tagfiles=escape(tagfiles, ', \')
@@ -166,8 +168,9 @@ function! manuals#search#VimHelp(w1, w2, kind, getter, displayer, ...)
          " call map(htlist, 'v:val . " " . s:VimHelpScore(v:val, s:helpword)') " debug
          " echom a:w1 . " " . len(htags)
          let result=manuals#search#Result('k', 'l', htlist)
-      finally
          setl nomodified
+      finally
+         silent! exec 'b ' . curbuf
          silent! exec 'bwipeout ' . tmpbuf
       endtry
    elseif a:kind == 'g'
