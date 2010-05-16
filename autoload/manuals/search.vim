@@ -290,7 +290,7 @@ function! manuals#search#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
          endfor
          let s:helpword = a:w1
          call sort(htlist, "s:VimHelpCompare")
-         let result=manuals#search#Result('k', 'l', htlist]
+         let result=manuals#search#Result('k', 'l', htlist)
       finally
          if tmpbuf >= 0
             silent! exec 'bwipeout! ' . tmpbuf
@@ -315,7 +315,7 @@ function! manuals#search#ExternVimHelp(w1, w2, kind, getter, displayer, ...)
             let [ids, gritems] = vxlib#cmd#TransformQFixItems(items)
             call s:KeepBuffers(knownbufs)
             call setqflist([])
-            let result=manuals#search#Result('h', 'l', gritems]
+            let result=manuals#search#Result('h', 'l', gritems)
          endif
       endif
    endif
