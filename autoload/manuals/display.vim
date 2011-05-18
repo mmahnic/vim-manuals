@@ -137,8 +137,12 @@ endfunc
 " TODO: currently using VxPopup (list of items); need to implement 'textbox' in vimuiex
 " TODO: if type contains 'b', load items from a buffer
 function! manuals#display#OpenVxText(rslt)
-   let popopt = {}
-   call vimuiex#vxlist#VxPopup(a:rslt.content, 'Manual-Text', popopt)
+   if has('popuplist')
+      call popuplist(a:rslt.content, 'Manual-Text')
+   else
+      let popopt = {}
+      call vimuiex#vxlist#VxPopup(a:rslt.content, 'Manual-Text', popopt)
+   endif
    return -1
 endfunc
 
@@ -154,12 +158,24 @@ endfunc
 "    grep results: should jump to result
 " TODO: Get the title from the caller
 function! manuals#display#OpenVxList(rslt)
+   let slctd = -1
    let popopt = {}
-   if a:rslt.kind == 'h'
-      let popopt['init'] = s:SNR . 'VxcbInitOpenGrepResults'
-      let popopt['current'] = 1
+   if has('popuplist')
+      if a:rslt.kind == 'h'
+         let popopt['current'] = 1
+         " TODO: let popopt['titleitems'] = ['^\s*[0-9]\+:', 0]
+      endif
+      let rslt = popuplist(a:rslt.content, 'Manual-List', popopt)
+      if rslt.status == 'accept'
+         let slctd = rslt.current
+      endif
+   else
+      if a:rslt.kind == 'h'
+         let popopt['init'] = s:SNR . 'VxcbInitOpenGrepResults'
+         let popopt['current'] = 1
+      endif
+      let slctd = vimuiex#vxlist#VxPopup(a:rslt.content, 'Manual-List', popopt)
    endif
-   let slctd = vimuiex#vxlist#VxPopup(a:rslt.content, 'Manual-List', popopt)
    if len(slctd) < 1
       return -1
    endif
@@ -169,9 +185,17 @@ endfunc
 " Select a choice from a menu
 " TODO: Get the title from the caller
 function! manuals#display#OpenVxMenu(rslt)
-   let popopt = {}
-   let popopt.columns = 1
-   let slctd = vimuiex#vxlist#VxPopup(a:rslt.content, 'Menu', popopt)
+   let slctd = -1
+   if has('popuplist')
+      let rslt = popuplist(a:rslt.content, 'Menu')
+      if rslt.status == 'accept'
+         let slctd = rslt.current
+      endif
+   else
+      let popopt = {}
+      let popopt.columns = 1
+      let slctd = vimuiex#vxlist#VxPopup(a:rslt.content, 'Menu', popopt)
+   endif
    if len(slctd) < 1
       return -1
    endif
