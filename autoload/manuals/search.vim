@@ -137,7 +137,7 @@ endfunc
 " getterDef - an entry from VxlibManual_Getters; may contain additional parameters
 " TODO: displayDef - where will the results be diplayed; may influence the result-type
 " @returns ['kind/type', data, filetype]
-"       type: a set of flags (eg. 'tl'): @see <url:manuals.vim#flagdefs>
+"       type: a set of flags (eg. 'tl'): @see <url:core.vim#flagdefs>
 "       filetype: suggested filetype when the result (full text) is displayed
 "          in a vim buffer
 function! manuals#search#VimHelp(w1, w2, kind, getter, displayer, ...)
