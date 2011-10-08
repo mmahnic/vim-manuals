@@ -492,6 +492,17 @@ endfunc
 " eg. in case of dict it verifies if dict is installed.
 " (late inititalization/verification)
 " <VIMPLUGIN id="manuals#search" >
+   function s:Manuals_mandir(fname)
+      let found = globpath(&rtp, 'manuals/' . a:fname)
+      if found == ''
+         return ''
+      endif
+      let fname = split(found, ',')[0]
+      if !filereadable(fname)
+         return ''
+      endif
+      return fnamemodify(fname, ':p:h')
+   endfunc
    if !exists("g:vxlib_manuals_directory")
       let rtp0 = split(&rtp, ',')[0]
       let g:vxlib_manuals_directory = expand(rtp0 . "/manuals")
@@ -521,17 +532,18 @@ endfunc
    call s:VxMan_AddContexts(['sh'], ['man'])
    call s:VxMan_AddContexts(['*/*comment', '*/*string', 'text', 'tex', '*'], ['dict'])
 
+   let s:hdir = s:Manuals_mandir('pydiction/complete-dict')
    if exists('g:pydiction_location') && filereadable(g:pydiction_location)
-            \ || filereadable(g:vxlib_manuals_directory . "/pydiction/complete-dict")
+            \ || s:hdir != ''
       " pydiction(850)
       call s:VxMan_AddGetter(['pydiction', 'k', 'manuals#search#Pydiction',
                \ 'Get a list of symbols using pydiction complete-dict.'])
       call s:VxMan_AddContexts(['python'], ['pydiction'])
    endif
 
-   if filereadable(g:vxlib_manuals_directory . '/cmakeref/cmakecmds.txt')
+   let s:hdir = s:Manuals_mandir('cmakeref/cmakecmds.txt')
+   if s:hdir != ''
       " cmakeref(3045)
-      let s:hdir = g:vxlib_manuals_directory . '/cmakeref'
       call s:VxMan_AddGetter(['cmakeref>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for CMake.',
                \ { 'helpdirs': s:hdir, 'helpext': '.txt' }
@@ -540,9 +552,9 @@ endfunc
       unlet s:hdir
    endif
 
-   if filereadable(g:vxlib_manuals_directory . '/cssref/css21.txt')
+   let s:hdir = s:Manuals_mandir('cssref/css21.txt')
+   if s:hdir != ''
       " css21(918)
-      let s:hdir = g:vxlib_manuals_directory . '/cssref'
       call s:VxMan_AddGetter(['cssref>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for CSS.',
                \ { 'helpdirs': s:hdir }
@@ -551,10 +563,10 @@ endfunc
       unlet s:hdir
    endif
 
-   if filereadable(g:vxlib_manuals_directory . '/crefvim/crefvim.txt')
+   let s:hdir = s:Manuals_mandir('crefvim/crefvim.txt')
+   if s:hdir != ''
       " crefvim(614)
       " TODO: stlref(2353) can be put in the same dir
-      let s:hdir = g:vxlib_manuals_directory . '/crefvim'
       call s:VxMan_AddGetter(['crefvim>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for C.',
                \ { 'helpdirs': s:hdir }
@@ -563,10 +575,12 @@ endfunc
       unlet s:hdir
    endif
 
-   if filereadable(g:vxlib_manuals_directory . '/luarefvim/lua50refvim.txt')
-            \ || filereadable(g:vxlib_manuals_directory . '/luarefvim/lua51refvim.txt')
+   let s:hdir = s:Manuals_mandir('luarefvim/lua50refvim.txt')
+   if s:hdir == ''
+      let s:hdir = s:Manuals_mandir('luarefvim/lua51refvim.txt')
+   endif
+   if s:hdir != ''
       " luarefvim(1291)
-      let s:hdir = g:vxlib_manuals_directory . '/luarefvim'
       call s:VxMan_AddGetter(['luarefvim>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for Lua.',
                \ { 'helpdirs': s:hdir }
