@@ -541,17 +541,6 @@ endfunc
       call s:VxMan_AddContexts(['python'], ['pydiction'])
    endif
 
-   let s:hdir = s:Manuals_mandir('cmakeref/cmakecmds.txt')
-   if s:hdir != ''
-      " cmakeref(3045)
-      call s:VxMan_AddGetter(['cmakeref>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
-               \ 'Get help for CMake.',
-               \ { 'helpdirs': s:hdir, 'helpext': '.txt' }
-               \ ]) " XXX { helpext: } unused, defaults to .txt
-      call s:VxMan_AddContexts(['cmake'], ['cmakeref'])
-      unlet s:hdir
-   endif
-
    let s:hdir = s:Manuals_mandir('cssref/css21.txt')
    if s:hdir != ''
       " css21(918)

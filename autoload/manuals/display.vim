@@ -185,21 +185,21 @@ endfunc
 " Select a choice from a menu
 " TODO: Get the title from the caller
 function! manuals#display#OpenVxMenu(rslt)
-   let slctd = -1
    if has('popuplist')
       let rslt = popuplist(a:rslt.content, 'Menu')
       if rslt.status == 'accept'
-         let slctd = rslt.current
+         return rslt.current
       endif
    else
       let popopt = {}
       let popopt.columns = 1
       let slctd = vimuiex#vxlist#VxPopup(a:rslt.content, 'Menu', popopt)
+      if len(slctd) < 1
+         return -1
+      endif
+      return slctd[0]
    endif
-   if len(slctd) < 1
-      return -1
-   endif
-   return slctd[0]
+   return -1
 endfunc
 
 

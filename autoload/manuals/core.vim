@@ -70,6 +70,7 @@ let s:displaykinds = { 't': 'text', 'k': 'keywords', 'g': 'grep', 'm': 'menu' }
 " { 'extractors-function'={ 'fn'='extractor-function', ... }, ... }
 let s:VxlibManual_Getters = {}
 function! s:RegisterNewGetters()
+   "echom "NewGetters"
    if !exists("g:VxlibManuals_NewGetters")
       return
    endif
@@ -100,8 +101,8 @@ function! s:RegisterNewGetters()
       let s:VxlibManual_Getters[gdef.id] = gdef
       " echom s:VxlibManual_Getters[gdef.id].doc
    endfor
-   "echo "Getters"
-   "echo s:VxlibManual_Getters
+   "echom "Getters"
+   "echom string(s:VxlibManual_Getters)
 
    unlet g:VxlibManuals_NewGetters
 endfunc
@@ -110,11 +111,14 @@ endfunc
 " [ [context, handler-id], ... ]
 let s:VxlibManual_Contexts = []
 function! s:RegisterNewContexts()
+   "echom "NewContexts"
    if !exists("g:VxlibManuals_NewContexts")
       return
    endif
 
    call vxlib#context#RegisterContextHandlers(s:VxlibManual_Contexts, g:VxlibManuals_NewContexts)
+   "echom "Contexts"
+   "echom string(s:VxlibManual_Contexts)
 
    unlet g:VxlibManuals_NewContexts
 endfunc
@@ -168,13 +172,18 @@ endfunc
 
 function! s:FindGetters(contexts, helpkinds)
    if len(a:contexts) < 1 || len(a:helpkinds) < 1
-      " TODO: user defined default getter
+      " TODO: FindGetters: user defined default getter
       return []
    endif
 
    " find the getters for the contexts
    let getters = vxlib#context#FindContextHandlers(s:VxlibManual_Contexts, a:contexts, 1)
+   "echom string(s:VxlibManual_Contexts)
+   "echom string(a:contexts)
+   "echom string(getters)
+   "echom "-----"
 
+   " TODO: FindGetters: apply a user defined order of getters or MRU
    " remove the getters that don't provide help of helpkind
    let kinds = []
    for i in range(len(a:helpkinds))
@@ -197,6 +206,7 @@ function! s:FindGetters(contexts, helpkinds)
          call add(result, gtr)
       endif
    endfor
+   "echom string(result)
 
    return result
 endfunc
@@ -348,6 +358,7 @@ function! manuals#core#ShowManual(count, visual, helpkind)
 
    let ctx = vxlib#context#GetCursorContext()
    let getters = s:FindGetters(ctx, helpkind)
+   "echom string(getters)
 
    if len(getters) < 1
       echom 'Don''t know how to provide help(' . helpkind . ') in context "' . ctx[0] . '".'
