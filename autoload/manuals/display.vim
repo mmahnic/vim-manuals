@@ -202,12 +202,6 @@ function! manuals#display#OpenVxMenu(rslt)
    return -1
 endfunc
 
-
-" =========================================================================== 
-" Global Initialization - Processed by Plugin Code Generator
-" =========================================================================== 
-finish
-
 " id=display-function
 " Types of display:
 "    - text
@@ -261,56 +255,36 @@ finish
 " desired format. If a getter doesn't provide a format supported by the
 " displayer, ShowManual may convert the getters result into displayers format.
 
-" <PLUGINFUNCTION id="manuals#var-mandisplaylist">
-if !exists("g:VxlibManuals_NewDisplayers")
-   let g:VxlibManuals_NewDisplayers = []
-endif
-" </PLUGINFUNCTION>
-" <PLUGINFUNCTION id="manuals#addtextdisplay" name="VxMan_AddTextDisplay">
-function! s:VxMan_AddTextDisplay(name, dispfn, datatypes)
-   call add(g:VxlibManuals_NewDisplayers, ['t', a:name, a:dispfn, a:datatypes])
-endfunc
-" </PLUGINFUNCTION>
-" <PLUGINFUNCTION id="manuals#addmenudisplay" name="VxMan_AddMenuDisplay">
-function! s:VxMan_AddMenuDisplay(name, dispfn)
-   call add(g:VxlibManuals_NewDisplayers, ['m', a:name, a:dispfn, ''])
-endfunc
-" </PLUGINFUNCTION>
-" <PLUGINFUNCTION id="manuals#addlistdisplay" name="VxMan_AddListDisplay">
-function! s:VxMan_AddListDisplay(name, dispfn, datatypes)
-   call add(g:VxlibManuals_NewDisplayers, ['k', a:name, a:dispfn, a:datatypes])
-endfunc
-" </PLUGINFUNCTION>
-" <PLUGINFUNCTION id="manuals#addgrepdisplay" name="VxMan_AddGrepDisplay">
-function! s:VxMan_AddGrepDisplay(name, dispfn, datatypes)
-   call add(g:VxlibManuals_NewDisplayers, ['g', a:name, a:dispfn, a:datatypes])
-endfunc
-" </PLUGINFUNCTION>
+let s:registered = 0
+function! manuals#display#register()
+   if s:registered
+      return
+   endif
+   let s:registered = 1
 
-" <VIMPLUGIN id="manuals#display" >
-   call s:VxMan_AddMenuDisplay('choice', 'manuals#display#InputList')
+   call manuals#init#AddMenuDisplay('choice', 'manuals#display#InputList')
 
-   call s:VxMan_AddTextDisplay('echo', 'manuals#display#Echo', 'lb')
-   call s:VxMan_AddTextDisplay('manbuffer', 'manuals#display#OpenManualsBuffer', 'bl')
+   call manuals#init#AddTextDisplay('echo', 'manuals#display#Echo', 'lb')
+   call manuals#init#AddTextDisplay('manbuffer', 'manuals#display#OpenManualsBuffer', 'bl')
 
-   call s:VxMan_AddListDisplay('choice', 'manuals#display#InputList', 'l')
-   call s:VxMan_AddGrepDisplay('choice', 'manuals#display#InputList', 'l')
-   call s:VxMan_AddGrepDisplay('qfixlist', 'manuals#display#QuickFixList', 'q')
+   call manuals#init#AddListDisplay('choice', 'manuals#display#InputList', 'l')
+   call manuals#init#AddGrepDisplay('choice', 'manuals#display#InputList', 'l')
+   call manuals#init#AddGrepDisplay('qfixlist', 'manuals#display#QuickFixList', 'q')
 
    "call s:AddGrepDisplay('qfixlist', 'manuals#display#QFixList', 'qo')
 
-   if s:PluginExists('vimuiex#vxlist', 'autoload/vimuiex/vxlist.vim')
-      call s:VxMan_AddMenuDisplay('vimuiex', 'manuals#display#OpenVxMenu')
+   if vxlib#plugin#PluginExists('vimuiex#vxlist', 'autoload/vimuiex/vxlist.vim')
+      call manuals#init#AddMenuDisplay('vimuiex', 'manuals#display#OpenVxMenu')
 
-      call s:VxMan_AddTextDisplay('vimuiex', 'manuals#display#OpenVxText', 'lb')
+      call manuals#init#AddTextDisplay('vimuiex', 'manuals#display#OpenVxText', 'lb')
 
-      call s:VxMan_AddListDisplay('vimuiex', 'manuals#display#OpenVxList', 'l')
-      call s:VxMan_AddGrepDisplay('vimuiex', 'manuals#display#OpenVxList', 'l')
+      call manuals#init#AddListDisplay('vimuiex', 'manuals#display#OpenVxList', 'l')
+      call manuals#init#AddGrepDisplay('vimuiex', 'manuals#display#OpenVxList', 'l')
    endif
 
-   if s:PluginExists('tlib', 'plugin/02tlib.vim')
-      call s:VxMan_AddListDisplay('tlib', 'manuals#display#OpenTlibList', 'bl')
-      call s:VxMan_AddGrepDisplay('tlib', 'manuals#display#OpenTlibList', 'bl')
+   if vxlib#plugin#PluginExists('tlib', 'plugin/02tlib.vim')
+      call manuals#init#AddListDisplay('tlib', 'manuals#display#OpenTlibList', 'bl')
+      call manuals#init#AddGrepDisplay('tlib', 'manuals#display#OpenTlibList', 'bl')
    endif
-" </VIMPLUGIN>
+endfunc
 

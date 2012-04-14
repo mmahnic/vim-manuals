@@ -463,119 +463,99 @@ function! manuals#search#Perldoc(w1, w2, kind, getter, displayer, ...)
    return manuals#search#Result('t', 'l', rslt, 'man')
 endfunc
 
-" =========================================================================== 
-" Global Initialization - Processed by Plugin Code Generator
-" =========================================================================== 
-finish
-
-" a utility function that is copied to the beginning of a generated plugin script
-" <PLUGINFUNCTION id="manuals#addgetter" name="VxMan_AddGetter">
-if !exists("g:VxlibManuals_NewGetters")
-   let g:VxlibManuals_NewGetters = []
-endif
-function! s:VxMan_AddGetter(getterdef)
-   call add(g:VxlibManuals_NewGetters, a:getterdef)
-endfunc
-" </PLUGINFUNCTION>
-
-" <PLUGINFUNCTION id="manuals#addcontexts" name="VxMan_AddContexts">
-if !exists("g:VxlibManuals_NewContexts")
-   let g:VxlibManuals_NewContexts = []
-endif
-function! s:VxMan_AddContexts(contexts, getters)
-   call add(g:VxlibManuals_NewContexts, [a:contexts, a:getters])
-endfunc
-" </PLUGINFUNCTION>
-
 " TODO: (maybe) s:AddGetter may accept a function that verifies if it is possible
 " to use the getter; if not, the getter is not added to the VxlibManual_Getters
 " eg. in case of dict it verifies if dict is installed.
 " (late inititalization/verification)
-" <VIMPLUGIN id="manuals#search" >
-   function s:Manuals_mandir(fname)
-      let found = globpath(&rtp, 'manuals/' . a:fname)
-      if found == ''
-         return ''
-      endif
-      let fname = split(found, ',')[0]
-      if !filereadable(fname)
-         return ''
-      endif
-      return fnamemodify(fname, ':p:h')
-   endfunc
+function s:Manuals_mandir(fname)
+   let found = globpath(&rtp, 'manuals/' . a:fname)
+   if found == ''
+      return ''
+   endif
+   let fname = split(found, ',')[0]
+   if !filereadable(fname)
+      return ''
+   endif
+   return fnamemodify(fname, ':p:h')
+endfunc
+
+let s:registered = 0
+function! manuals#search#register()
+   if s:registered
+      return
+   endif
+   let s:registered = 1
+
    if !exists("g:vxlib_manuals_directory")
       let rtp0 = split(&rtp, ',')[0]
       let g:vxlib_manuals_directory = expand(rtp0 . "/manuals")
    endif
 
-   call s:VxMan_AddGetter(['vimhelp', 'tkg', 'manuals#search#VimHelp', 'Get Vim Help.'])
-   call s:VxMan_AddGetter(['extvimhelp>vimhelp', 'tkg', 'manuals#search#ExternVimHelp', 'Get Help in Vim Format.'])
-   call s:VxMan_AddGetter(['_choosevimhelp>vimhelp', 'tkg', 'manuals#search#ChooseVimHelp', 'Get Help in Vim Format.'])
-   call s:VxMan_AddGetter(['pydoc', 'tg', 'manuals#search#Pydoc', 'Get help for current word using pydoc.'])
-   call s:VxMan_AddGetter(['man', 't', 'manuals#search#Man', 'Get a man entry for current word.'])
-   call s:VxMan_AddGetter(['dict', 't', 'manuals#search#Dict', 'Get a dictionary entry for current word.'])
+   call manuals#init#AddGetter(['vimhelp', 'tkg', 'manuals#search#VimHelp', 'Get Vim Help.'])
+   call manuals#init#AddGetter(['extvimhelp>vimhelp', 'tkg', 'manuals#search#ExternVimHelp', 'Get Help in Vim Format.'])
+   call manuals#init#AddGetter(['_choosevimhelp>vimhelp', 'tkg', 'manuals#search#ChooseVimHelp', 'Get Help in Vim Format.'])
+   call manuals#init#AddGetter(['pydoc', 'tg', 'manuals#search#Pydoc', 'Get help for current word using pydoc.'])
+   call manuals#init#AddGetter(['man', 't', 'manuals#search#Man', 'Get a man entry for current word.'])
+   call manuals#init#AddGetter(['dict', 't', 'manuals#search#Dict', 'Get a dictionary entry for current word.'])
 
-   call s:VxMan_AddGetter(['perldoc', 't', 'manuals#search#Perldoc', 'Get help for current word using perldoc.'])
-   call s:VxMan_AddGetter(['perldoc-m>perldoc', 't', 'manuals#search#Perldoc',
+   call manuals#init#AddGetter(['perldoc', 't', 'manuals#search#Perldoc', 'Get help for current word using perldoc.'])
+   call manuals#init#AddGetter(['perldoc-m>perldoc', 't', 'manuals#search#Perldoc',
             \ 'Get help for module using perldoc.',
             \ { 'options': '-m'} ])
-   call s:VxMan_AddGetter(['perldoc-f>perldoc', 't', 'manuals#search#Perldoc',
+   call manuals#init#AddGetter(['perldoc-f>perldoc', 't', 'manuals#search#Perldoc',
             \ 'Get help for function using perldoc.',
             \ { 'options': '-f'} ])
 
-   call s:VxMan_AddContexts(['vim'], ['vimhelp'])
-   call s:VxMan_AddContexts(['help'], ['_choosevimhelp'])
-   call s:VxMan_AddContexts(['python'], ['pydoc'])
-   call s:VxMan_AddContexts(['perl'], ['perldoc'])
-   call s:VxMan_AddContexts(['perl', 'perl/perlStatement*'], ['perldoc-f'])
-   call s:VxMan_AddContexts(['perl', 'perl/perlPackageRef'], ['perldoc-m'])
-   call s:VxMan_AddContexts(['sh'], ['man'])
-   call s:VxMan_AddContexts(['*/*comment', '*/*string', 'text', 'tex', '*'], ['dict'])
+   call manuals#init#AddContexts(['vim'], ['vimhelp'])
+   call manuals#init#AddContexts(['help'], ['_choosevimhelp'])
+   call manuals#init#AddContexts(['python'], ['pydoc'])
+   call manuals#init#AddContexts(['perl'], ['perldoc'])
+   call manuals#init#AddContexts(['perl', 'perl/perlStatement*'], ['perldoc-f'])
+   call manuals#init#AddContexts(['perl', 'perl/perlPackageRef'], ['perldoc-m'])
+   call manuals#init#AddContexts(['sh'], ['man'])
+   call manuals#init#AddContexts(['*/*comment', '*/*string', 'text', 'tex', '*'], ['dict'])
 
-   let s:hdir = s:Manuals_mandir('pydiction/complete-dict')
+   let hdir = s:Manuals_mandir('pydiction/complete-dict')
    if exists('g:pydiction_location') && filereadable(g:pydiction_location)
-            \ || s:hdir != ''
+            \ || hdir != ''
       " pydiction(850)
-      call s:VxMan_AddGetter(['pydiction', 'k', 'manuals#search#Pydiction',
+      call manuals#init#AddGetter(['pydiction', 'k', 'manuals#search#Pydiction',
                \ 'Get a list of symbols using pydiction complete-dict.'])
-      call s:VxMan_AddContexts(['python'], ['pydiction'])
+      call manuals#init#AddContexts(['python'], ['pydiction'])
    endif
 
-   let s:hdir = s:Manuals_mandir('cssref/css21.txt')
-   if s:hdir != ''
+   let hdir = s:Manuals_mandir('cssref/css21.txt')
+   if hdir != ''
       " css21(918)
-      call s:VxMan_AddGetter(['cssref>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
+      call manuals#init#AddGetter(['cssref>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for CSS.',
-               \ { 'helpdirs': s:hdir }
+               \ { 'helpdirs': hdir }
                \ ])
-      call s:VxMan_AddContexts(['css', 'html*/css*', 'xhtml/*.css'], ['cssref'])
-      unlet s:hdir
+      call manuals#init#AddContexts(['css', 'html*/css*', 'xhtml/*.css'], ['cssref'])
    endif
 
-   let s:hdir = s:Manuals_mandir('crefvim/crefvim.txt')
-   if s:hdir != ''
+   let hdir = s:Manuals_mandir('crefvim/crefvim.txt')
+   if hdir != ''
       " crefvim(614)
       " TODO: stlref(2353) can be put in the same dir
-      call s:VxMan_AddGetter(['crefvim>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
+      call manuals#init#AddGetter(['crefvim>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for C.',
-               \ { 'helpdirs': s:hdir }
+               \ { 'helpdirs': hdir }
                \ ])
-      call s:VxMan_AddContexts(['c', 'cpp'], ['crefvim'])
-      unlet s:hdir
+      call manuals#init#AddContexts(['c', 'cpp'], ['crefvim'])
    endif
 
-   let s:hdir = s:Manuals_mandir('luarefvim/lua50refvim.txt')
-   if s:hdir == ''
-      let s:hdir = s:Manuals_mandir('luarefvim/lua51refvim.txt')
+   let hdir = s:Manuals_mandir('luarefvim/lua50refvim.txt')
+   if hdir == ''
+      let hdir = s:Manuals_mandir('luarefvim/lua51refvim.txt')
    endif
-   if s:hdir != ''
+   if hdir != ''
       " luarefvim(1291)
-      call s:VxMan_AddGetter(['luarefvim>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
+      call manuals#init#AddGetter(['luarefvim>extvimhelp', 'tkg', 'manuals#search#ExternVimHelp',
                \ 'Get help for Lua.',
-               \ { 'helpdirs': s:hdir }
+               \ { 'helpdirs': hdir }
                \ ])
-      call s:VxMan_AddContexts(['lua'], ['luarefvim'])
-      unlet s:hdir
+      call manuals#init#AddContexts(['lua'], ['luarefvim'])
    endif
-" </VIMPLUGIN>
+endfunc
 
