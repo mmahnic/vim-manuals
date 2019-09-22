@@ -20,8 +20,10 @@
 "    - pass the input-type when calling the getter
 "
 " TODO: define the command that calls ShowManual
-if !vxlib#plugin#StopLoading('manuals-showmanual')
+if !vxlib#load#IsLoaded('manuals.commands')
+   call vxlib#load#SetLoaded('manuals.commands', 1) 
    call vxlib#plugin#CheckSetting('g:manuals_help_buffer', '"*Manual*"')
+
    nmap <silent> <unique> <Plug>VxManText :call manuals#core#ShowManual(v:count,'','t')<cr>
    vmap <silent> <unique> <Plug>VxManText :<C-U>call manuals#core#ShowManual(v:count,visualmode(),'t')<cr>
    nmap <silent> <unique> <Plug>VxManKeyword :call manuals#core#ShowManual(v:count,'','k')<cr>
@@ -32,7 +34,9 @@ if !vxlib#plugin#StopLoading('manuals-showmanual')
    vmap <silent> <unique> <Plug>VxManMenu :<C-U>call manuals#core#ShowManual(v:count,visualmode(),'m')<cr>
 endif
 
-if !vxlib#plugin#StopLoading('manuals-maps')
+if !vxlib#load#IsLoaded('manuals.keymaps')
+   call vxlib#load#SetLoaded('manuals.keymaps', 1)
+
    nmap K <Plug>VxManText
    vmap K <Plug>VxManText
    nmap <leader>kk <Plug>VxManKeyword

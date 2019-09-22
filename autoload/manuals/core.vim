@@ -5,9 +5,11 @@
 " License: GPL (http://www.gnu.org/copyleft/gpl.html)
 " This program comes with ABSOLUTELY NO WARRANTY.
 
-if vxlib#plugin#StopLoading('#au#manuals#core')
+if vxlib#load#IsLoaded('#manuals#core')
    finish
 endif
+call vxlib#load#SetLoaded('#manuals#core', 1)
+
 call manuals#search#register()
 call manuals#display#register()
 

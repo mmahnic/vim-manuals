@@ -5,9 +5,10 @@
 " License: GPL (http://www.gnu.org/copyleft/gpl.html)
 " This program comes with ABSOLUTELY NO WARRANTY.
 
-if vxlib#plugin#StopLoading('#au#manuals#display')
+if vxlib#load#IsLoaded('#manuals#display')
    finish
 endif
+call vxlib#load#SetLoaded('#manuals#display', 1)
 
 " =========================================================================== 
 " Local Initialization - on autoload
